@@ -7,5 +7,5 @@ Push 'h' key for Help.
 
 miniGraf is written in BBC BASIC and is under MIT licence.
 
-https://www.youtube.com/watch?v=9bjvjwZnP1s&ab_channel=BrunoVignoli
+https://www.youtube.com/watch?v=9bjvjwZnP1s
 
