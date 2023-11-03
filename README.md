@@ -6,3 +6,6 @@ You can even export a BASIC source code file with your graphics inside.
 Push 'h' key for Help.
 
 miniGraf is written in BBC BASIC and is under MIT licence.
+
+https://www.youtube.com/watch?v=9bjvjwZnP1s&ab_channel=BrunoVignoli
+
