@@ -4,9 +4,9 @@
    40 REM * by Bruno Vignoli, 2023 MIT *
    50 REM ******************************
    60 :
-   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:GOSUB 7230
+   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:GOSUB 7180
    80 minx%=80:maxx%=239:miny%=10:maxy%=129:maxcmd%=2000:paper%=0:pen%=15:xc%=160:yc%=65:stp%=1:tool$="p":cpt%=0
-   90 DIM cmd$(maxcmd%):DIM x%(maxcmd%):DIM y%(maxcmd%):DIM c%(maxcmd%)
+   90 DIM cmd maxcmd%:DIM x maxcmd%:DIM y maxcmd%:DIM c maxcmd%
   100 oldtool$="":oldxc%=0:oldyc%=0
   110 COLOUR 14:PRINT TAB(15,4);"miniGraf"
   120 PRINT TAB(15,5);STRING$(8,"=")
@@ -60,7 +60,7 @@
  2130 FOR i%=17 TO 25:PRINT TAB(0,i%);STRING$(40," ");:NEXT i%
  2140 RETURN
  2150 REM ********** clear all
- 2160 COLOUR 128+paper%:CLS:cmd$(0)="c":c%(0)=paper%
+ 2160 COLOUR 128+paper%:CLS:?(cmd+0)=ASC("c"):?(c+0)=paper%
  2170 GCOL 0,15:PLOT 4,minx%-1,miny%-1:PLOT 5,maxx%+1,miny%-1
  2180 PLOT 5,maxx%+1,maxy%+1:PLOT 5,minx%-1,maxy%+1:PLOT 5,minx%-1,miny%-1
  2190 RETURN
@@ -83,7 +83,7 @@
  2350 GOSUB 2290
  2360 RETURN
  2370 REM clear drawing area
- 2380 GCOL 0,paper%:PLOT 4,minx%,miny%:PLOT 101,maxx%,maxy%:cmd$(0)="c":c%(0)=paper%
+ 2380 GCOL 0,paper%:PLOT 4,minx%,miny%:PLOT 101,maxx%,maxy%:?(cmd+0)=ASC("c"):?(c+0)=paper%
  2390 RETURN
  3000 REM ********** save data
  3010 GOSUB 2120:PRINT TAB(0,17);:INPUT"Save filename (no ext):",f$
@@ -91,7 +91,7 @@
  3030 f$=f$+".mng"
  3040 file=OPENOUT f$
  3050 PRINT#file,cpt%:FOR i%=0 TO cpt%
- 3060 PRINT#file,cmd$(i%),c%(i%),x%(i%),y%(i%)
+ 3060 PRINT#file,?(cmd+i%),?(c+i%),?(x+i%),?(y+i%)
  3070 NEXT i%
  3080 CLOSE#file
  3090 GOSUB 2120:PRINT TAB(0,17);"File saved !"
@@ -104,7 +104,7 @@
  4050 IF file=0 THEN PRINT "No data !": CLOSE#file:RETURN
  4060 INPUT#file,cpt%
  4070 FOR i%=0 TO cpt%
- 4080 INPUT#file,cmd$(i%),c%(i%),x%(i%),y%(i%)
+ 4080 INPUT#file,?(cmd+i%),?(c+i%),?(x+i%),?(y+i%)
  4090 NEXT i%:GOSUB 7030
  4100 CLOSE#file
  4110 GOSUB 2120:PRINT TAB(0,17);"File loaded !"
@@ -118,11 +118,11 @@
  5060 file=OPENOUT f$
  5070 FOR i%=0 TO cpt%
  5080 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5190:a$=a$+" "
- 5090 IF cmd$(i%)="c" THEN a$=a$+"COLOUR 128+"+STR$(c%(i%))
- 5100 IF cmd$(i%)="m" THEN a$=a$+"GCOL 0,"+STR$(c%(i%))+":":a$=a$+"PLOT 4,"+STR$(x%(i%)-80+xo%)+","+STR$(y%(i%)-10+yo%)
- 5110 IF cmd$(i%)="p" THEN a$=a$+"GCOL 0,"+STR$(c%(i%))+":":a$=a$+"PLOT 69,"+STR$(x%(i%)-80+xo%)+","+STR$(y%(i%)-10+yo%)
- 5120 IF cmd$(i%)="d" THEN a$=a$+"GCOL 0,"+STR$(c%(i%))+":":a$=a$+"PLOT 4,"+STR$(x%(i%-1)-80+xo%)+","+STR$(y%(i%-1)-10+yo%):a$=a$+":PLOT 5,"+STR$(x%(i%)-80+xo%)+","+STR$(y%(i%)-10+yo%)
- 5130 IF cmd$(i%)="f" THEN a$=a$+"GCOL 0,"+STR$(c%(i%))+":":a$=a$+"PLOT 128,"+STR$(x%(i%)-80+xo%)+","+STR$(y%(i%)-10+yo%)
+ 5090 IF ?(cmd+i%)=ASC("c") THEN a$=a$+"COLOUR 128+"+STR$(?(c+i%))
+ 5100 IF ?(cmd+i%)=ASC("m") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5110 IF ?(cmd+i%)=ASC("p") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 69,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5120 IF ?(cmd+i%)=ASC("d") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 5,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5130 IF ?(cmd+i%)=ASC("f") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 128,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
  5140 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
  5150 NEXT i%
  5160 CLOSE#file
@@ -134,25 +134,30 @@
  5220 RETURN
  6000 REM ********** draw action
  6010 IF cpt%=0 THEN GOSUB 6080:GOTO 6030:RETURN
- 6015 IF cpt%<maxcmd% AND (oldtool$<>tool$ OR xc%<>x%(cpt%-1) OR yc%<>y%(cpt%-1)) THEN GOSUB 6080:GOTO 6030:RETURN
+ 6015 IF cpt%<maxcmd% AND (oldtool$<>tool$ OR xc%<>?(x+cpt%-1) OR yc%<>?(y+cpt%-1)) THEN GOSUB 6080:GOTO 6030:RETURN
  6020 IF cpt%=maxcmd% THEN VDU 7:RETURN
  6030 IF tool$="m" THEN GCOL 0,pen%:PLOT 4,xc%,yc%
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="d" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
- 6060 IF tool$="f" THEN GCOL 0,pen%:PROCfill(xc%,yc%,paper%,pen%)
+ 6060 IF tool$="f" THEN GOSUB 6100
  6070 oldxc%=xc%:oldyc%=yc%:RETURN
- 6080 cpt%=cpt%+1:cmd$(cpt%)=tool$:x%(cpt%)=xc%:y%(cpt%)=yc%:c%(cpt%)=pen%
+ 6080 cpt%=cpt%+1:?(cmd+cpt%)=ASC(tool$):?(x+cpt%)=xc%:?(y+cpt%)=yc%:?(c+cpt%)=pen%
  6090 oldtool$=tool$:RETURN
+ 6100 REM ********** call asm function to flood fill
+ 6110 xcol=xc%:ycol=yc%
+ 6120 target_col=paper%:col=pen%
+ 6130 CALL fill
+ 6140 RETURN
  7000 REM ********** undo
  7010 IF cpt%>0 THEN cpt%=cpt%-1:GOSUB 2150:GOSUB 7030:RETURN
  7020 RETURN
  7030 REM ********** redraw image
  7040 FOR i%=0 TO cpt%
- 7050 IF cmd$(i%)="c" THEN GCOL 0,128+c%(i%)
- 7060 IF cmd$(i%)="m" THEN GCOL 0,c%(i%):PLOT 4,x%(i%),y%(i%)
- 7070 IF cmd$(i%)="p" THEN GCOL 0,c%(i%):PLOT 69,x%(i%),y%(i%)
- 7080 IF cmd$(i%)="d" THEN PLOT 4,x%(i%-1),y%(i%-1):GCOL 0,c%(i%):PLOT 5,x%(i%),y%(i%)
- 7090 IF cmd$(i%)="f" THEN GCOL 0,c%(i%):PLOT 128,x%(i%),y%(i%)
+ 7050 IF ?(cmd+i%)=ASC("c") THEN GCOL 0,128+?(c+i%)
+ 7060 IF ?(cmd+i%)=ASC("m") THEN GCOL 0,?(c+i%):PLOT 4,?(x+i%),?(y+i%)
+ 7070 IF ?(cmd+i%)=ASC("p") THEN GCOL 0,?(c+i%):PLOT 69,?(x+i%),?(y+i%)
+ 7080 IF ?(cmd+i%)=ASC("d") THEN PLOT 4,?(x+i%-1),?(y+i%-1):GCOL 0,?(c+i%):PLOT 5,?(x+i%),?(y+i%)
+ 7090 IF ?(cmd+i%)=ASC("f") THEN GCOL 0,?(c+i%):PLOT 128,?(x+i%),?(y+i%)
  7100 NEXT i%:GOSUB 2000
  7110 RETURN
  7120 REM ********** wait a short time
@@ -161,15 +166,19 @@
  7150 REM ********** wait key
  7160 a$=GET$
  7170 RETURN
- 7180 DEF PROCfill(x%,y%,tc%,c%)
- 7190 ?xcol=x%:?ycol=y%
- 7200 ?target_col=tc%:?col=c%
- 7210 CALL fill
- 7220 ENDPROC
- 7230 DIM code 200
- 7240 FOR opt%=1 TO 3 STEP 2
- 7250 P%=code
- 7300 [OPT opt%
+ 7180 HIMEM=&EFFF
+ 7190 DIM code 256
+ 7200 P%=code
+ 7210 FOR opt%=0 TO 2 STEP 2
+ 7220 [OPT opt%
+ 7230 .swapx DEFW 0
+ 7240 .swapy DEFW 0
+ 7250 .swapc DEFB 0
+ 7260 .xcol DEFW 0
+ 7270 .ycol DEFW 0
+ 7280 .target_col DEFB 0
+ 7290 .col DEFB 0
+ 7300
  7310 .fill
  7320 LD IX,xcol
  7330 LD E,(IX+0)
@@ -183,93 +192,89 @@
  7410 .fill_loop
  7420 PUSH DE
  7430 PUSH HL
- 7440 CALL get_pixel
- 7450 CP C
- 7460 RET NZ ; exit if already painted
- 7470
- 7480 ; paint pixel
- 7490 CALL put_pixel
- 7500
- 7510 ; flood fill x-1,y
- 7520 DEC DE
- 7530 CALL fill_loop
- 7540
- 7550 ; flood fill x+1,y
- 7560 INC DE
+ 7440
+ 7450 CALL get_pixel
+ 7460 CP C
+ 7470 RET NZ ; exit if already painted
+ 7480
+ 7490 ; paint pixel
+ 7500 CALL put_pixel
+ 7510
+ 7520 ; flood fill x-1,y
+ 7530 DEC DE
+ 7540 CALL fill_loop
+ 7550
+ 7560 ; flood fill x+1,y
  7570 INC DE
- 7580 CALL fill_loop
- 7590
- 7600 ; flood fill x,y-1
- 7610 DEC DE
- 7620 DEC HL
- 7630 CALL fill_loop
- 7640
- 7650 ; flood fill x,y+1
- 7660 INC HL
+ 7580 INC DE
+ 7590 CALL fill_loop
+ 7600
+ 7610 ; flood fill x,y-1
+ 7620 DEC DE
+ 7630 DEC HL
+ 7640 CALL fill_loop
+ 7650
+ 7660 ; flood fill x,y+1
  7670 INC HL
- 7680 CALL fill_loop
- 7690
- 7700 POP HL
- 7710 POP DE
- 7720 RET
- 7730
- 7740 .put_pixel
- 7750 PUSH AF
- 7760
- 7770 LD A,18
- 7780 RST &10
- 7790 LD A,0
- 7800 RST &10
- 7810 LD A,(col)
- 7820 RST &10
- 7830
- 7840 LD A,25
- 7850 RST &10
- 7860 LD A,69
- 7870 RST &10
- 7880 LD E,A
- 7890 RST &10
- 7900 LD D,A
- 7910 RST &10
- 7920 LD L,A
- 7930 RST &10
- 7940 LD H,A
- 7950 RST &10
- 7960
- 7970 POP AF
- 7980 RET
- 7990
- 8000 .get_pixel
- 8010 LD A,&08
- 8020 RST &08
- 8030 RES 2,(IX+&04)
- 8040
- 8050 LD A,23
- 8060 RST &10
- 8070 XOR A
- 8080 RST &10
- 8090 LD A,&84
- 8100 RST &10
- 8110 LD E,A ; x
- 8120 RST &10
- 8130 LD D,A
- 8140 RST &10
- 8150 LD L,A ; y
- 8160 RST &10
- 8170 LD H,A
- 8180 RST &10
- 8190
- 8200 .gp_loop
- 8210 BIT 2,(IX+&04)
- 8220 JR Z,gp_loop
- 8230
- 8240 LD A,(IX+&16)
- 8250 RET
- 8260
- 8270 .xcol DEFW 0
- 8280 .ycol DEFW 0
- 8290 .target_col DEFB 0
- 8300 .col DEFB 15
- 8310 ]
- 8320 NEXT
- 8330 RETURN
+ 7680 INC HL
+ 7690 CALL fill_loop
+ 7700
+ 7710 POP HL
+ 7720 POP DE
+ 7730 RET
+ 7740
+ 7750 .put_pixel
+ 7760 PUSH AF
+ 7770 
+ 7780 LD A,18
+ 7790 RST &10
+ 7800 LD A,0
+ 7810 RST &10
+ 7820 LD A,col
+ 7830 RST &10
+ 7840 
+ 7850 LD A,25
+ 7860 RST &10
+ 7870 LD A,69
+ 7880 RST &10
+ 7890 LD A,E
+ 7900 RST &10
+ 7910 LD A,D
+ 7920 RST &10
+ 7930 LD A,L
+ 7940 RST &10
+ 7950 LD A,H
+ 7960 RST &10
+ 7970
+ 7980 POP AF
+ 7990 RET
+ 8000
+ 8010 .get_pixel
+ 8020 LD A,&08
+ 8030 RST &08
+ 8040 RES 2,(IX+&04)
+ 8050
+ 8060 LD A,23
+ 8070 RST &10
+ 8080 LD A,0
+ 8090 RST &10
+ 8100 LD A,&84
+ 8110 RST &10
+ 8120 LD A,E
+ 8130 RST &10
+ 8140 LD A,D
+ 8150 RST &10
+ 8160 LD A,L
+ 8170 RST &10
+ 8180 LD A,H
+ 8190 RST &10
+ 8200
+ 8210 .gp_loop
+ 8220 BIT 2,(IX+&04)
+ 8230 JR Z,gp_loop
+ 8240
+ 8250 LD A,(IX+&16)
+ 8260 RET
+ 8270 ]
+ 8280 NEXT
+ 8290 RETURN
