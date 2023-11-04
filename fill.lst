@@ -1,0 +1,323 @@
+PC     Output            Line Source
+040000                   0001 ;
+040000                   0002 ; flood fill
+040000                   0003 ;
+040000                   0004 
+040000                   0005 .ASSUME ADL=0
+040000                   0006 .ORG $FC00
+00FC00                   0007 
+00FC00 C3 45 FC          0008 	JP fill
+00FC03                   0009 
+00FC03                   0010 ; MOS header
+00FC03 FF FF FF FF FF FF 0011 .ALIGN 64
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF FF FF FF FF FF 
+       FF                
+00FC40 4D 4F 53 00 00    0012 .DB "MOS",0,0
+00FC45                   0013 
+00FC45                   0014 	include "mos_api.inc"
+00FC45                   0001 ;
+00FC45                   0002 ; Title:	AGON MOS - API for user projects
+00FC45                   0003 ; Author:	Dean Belfield
+00FC45                   0004 ; Created:	03/08/2022
+00FC45                   0005 ; Last Updated:	10/08/2023
+00FC45                   0006 ;
+00FC45                   0007 ; Modinfo:
+00FC45                   0008 ; 05/08/2022:	Added mos_feof
+00FC45                   0009 ; 09/08/2022:	Added system variables: cursorX, cursorY
+00FC45                   0010 ; 18/08/2022:	Added system variables: scrchar, scrpixel, audioChannel, audioSuccess, vpd_pflags
+00FC45                   0011 ; 05/09/2022:	Added mos_ren, vdp_pflag_mode
+00FC45                   0012 ; 24/09/2022:	Added mos_getError, mos_mkdir
+00FC45                   0013 ; 13/10/2022:	Added mos_oscli
+00FC45                   0014 ; 23/02/2023:	Added more sysvars, fixed typo in sysvar_audioSuccess, offsets for sysvar_scrCols, sysvar_scrRows
+00FC45                   0015 ; 04/03/2023:	Added sysvar_scrpixelIndex
+00FC45                   0016 ; 08/03/2023:	Renamed sysvar_keycode to sysvar_keyascii, added sysvar_vkeycode
+00FC45                   0017 ; 15/03/2023:	Added mos_copy, mos_getrtc, mos_setrtc, rtc, vdp_pflag_rtc
+00FC45                   0018 ; 21/03/2023:	Added mos_setintvector, sysvars for keyboard status, vdu codes for vdp
+00FC45                   0019 ; 22/03/2023:	The VDP commands are now indexed from 0x80
+00FC45                   0020 ; 29/03/2023:	Added mos_uopen, mos_uclose, mos_ugetc, mos_uputc
+00FC45                   0021 ; 13/04/2023:	Added FatFS file structures (FFOBJID, FIL, DIR, FILINFO)
+00FC45                   0022 ; 15/04/2023:	Added mos_getfil, mos_fread, mos_fwrite and mos_flseek
+00FC45                   0023 ; 19/05/2023:	Added sysvar_scrMode
+00FC45                   0024 ; 05/06/2023:	Added sysvar_rtcEnable
+00FC45                   0025 ; 03/08/2023:	Added mos_setkbvector
+00FC45                   0026 ; 10/08/2023:	Added mos_getkbmap
+00FC45                   0027 
+00FC45                   0028 ; VDP control (VDU 23, 0, n)
+00FC45                   0029 ;
+00FC45                   0030 vdp_gp:			EQU 	80h
+00FC45                   0031 vdp_keycode:		EQU 	81h
+00FC45                   0032 vdp_cursor:		EQU	82h
+00FC45                   0033 vdp_scrchar:		EQU	83h
+00FC45                   0034 vdp_scrpixel:		EQU	84h
+00FC45                   0035 vdp_audio:		EQU	85h
+00FC45                   0036 vdp_mode:		EQU	86h
+00FC45                   0037 vdp_rtc:		EQU	87h
+00FC45                   0038 vdp_keystate:		EQU	88h
+00FC45                   0039 vdp_logicalcoords:	EQU	C0h
+00FC45                   0040 vdp_terminalmode:	EQU	FFh
+00FC45                   0041 
+00FC45                   0042 ; MOS high level functions
+00FC45                   0043 ;
+00FC45                   0044 mos_getkey:		EQU	00h
+00FC45                   0045 mos_load:		EQU	01h
+00FC45                   0046 mos_save:		EQU	02h
+00FC45                   0047 mos_cd:			EQU	03h
+00FC45                   0048 mos_dir:		EQU	04h
+00FC45                   0049 mos_del:		EQU	05h
+00FC45                   0050 mos_ren:		EQU	06h
+00FC45                   0051 mos_mkdir:		EQU	07h
+00FC45                   0052 mos_sysvars:		EQU	08h
+00FC45                   0053 mos_editline:		EQU	09h
+00FC45                   0054 mos_fopen:		EQU	0Ah
+00FC45                   0055 mos_fclose:		EQU	0Bh
+00FC45                   0056 mos_fgetc:		EQU	0Ch
+00FC45                   0057 mos_fputc:		EQU	0Dh
+00FC45                   0058 mos_feof:		EQU	0Eh
+00FC45                   0059 mos_getError:		EQU	0Fh
+00FC45                   0060 mos_oscli:		EQU	10h
+00FC45                   0061 mos_copy:		EQU	11h
+00FC45                   0062 mos_getrtc:		EQU	12h
+00FC45                   0063 mos_setrtc:		EQU	13h
+00FC45                   0064 mos_setintvector:	EQU	14h
+00FC45                   0065 mos_uopen:		EQU	15h
+00FC45                   0066 mos_uclose:		EQU	16h
+00FC45                   0067 mos_ugetc:		EQU	17h
+00FC45                   0068 mos_uputc:		EQU 	18h
+00FC45                   0069 mos_getfil:		EQU	19h
+00FC45                   0070 mos_fread:		EQU	1Ah
+00FC45                   0071 mos_fwrite:		EQU	1Bh
+00FC45                   0072 mos_flseek:		EQU	1Ch
+00FC45                   0073 mos_setkbvector:	EQU	1Dh
+00FC45                   0074 mos_getkbmap:		EQU	1Eh
+00FC45                   0075 
+00FC45                   0076 ; FatFS file access functions
+00FC45                   0077 ;
+00FC45                   0078 ffs_fopen:		EQU	80h
+00FC45                   0079 ffs_fclose:		EQU	81h
+00FC45                   0080 ffs_fread:		EQU	82h
+00FC45                   0081 ffs_fwrite:		EQU	83h
+00FC45                   0082 ffs_flseek:		EQU	84h
+00FC45                   0083 ffs_ftruncate:		EQU	85h
+00FC45                   0084 ffs_fsync:		EQU	86h
+00FC45                   0085 ffs_fforward:		EQU	87h
+00FC45                   0086 ffs_fexpand:		EQU	88h
+00FC45                   0087 ffs_fgets:		EQU	89h
+00FC45                   0088 ffs_fputc:		EQU	8Ah
+00FC45                   0089 ffs_fputs:		EQU	8Bh
+00FC45                   0090 ffs_fprintf:		EQU	8Ch
+00FC45                   0091 ffs_ftell:		EQU	8Dh
+00FC45                   0092 ffs_feof:		EQU	8Eh
+00FC45                   0093 ffs_fsize:		EQU	8Fh
+00FC45                   0094 ffs_ferror:		EQU	90h
+00FC45                   0095 
+00FC45                   0096 ; FatFS directory access functions
+00FC45                   0097 ;
+00FC45                   0098 ffs_dopen:		EQU	91h
+00FC45                   0099 ffs_dclose:		EQU	92h
+00FC45                   0100 ffs_dread:		EQU	93h
+00FC45                   0101 ffs_dfindfirst:		EQU	94h
+00FC45                   0102 ffs_dfindnext:		EQU	95h
+00FC45                   0103 
+00FC45                   0104 ; FatFS file and directory management functions
+00FC45                   0105 ;
+00FC45                   0106 ffs_stat:		EQU	96h
+00FC45                   0107 ffs_unlink:		EQU	97h
+00FC45                   0108 ffs_rename:		EQU	98h
+00FC45                   0109 ffs_chmod:		EQU	99h
+00FC45                   0110 ffs_utime:		EQU	9Ah
+00FC45                   0111 ffs_mkdir:		EQU	9Bh
+00FC45                   0112 ffs_chdir:		EQU	9Ch
+00FC45                   0113 ffs_chdrive:		EQU	9Dh
+00FC45                   0114 ffs_getcwd:		EQU	9Eh
+00FC45                   0115 
+00FC45                   0116 ; FatFS volume management and system configuration functions
+00FC45                   0117 ;
+00FC45                   0118 ffs_mount:		EQU	9Fh
+00FC45                   0119 ffs_mkfs:		EQU	A0h
+00FC45                   0120 ffs_fdisk:		EQU	A1h
+00FC45                   0121 ffs_getfree:		EQU	A2h
+00FC45                   0122 ffs_getlabel:		EQU	A3h
+00FC45                   0123 ffs_setlabel:		EQU	A4h
+00FC45                   0124 ffs_setcp:		EQU	A5h
+00FC45                   0125 
+00FC45                   0126 ; File access modes
+00FC45                   0127 ;
+00FC45                   0128 fa_read:		EQU	01h
+00FC45                   0129 fa_write:		EQU	02h
+00FC45                   0130 fa_open_existing:	EQU	00h
+00FC45                   0131 fa_create_new:		EQU	04h
+00FC45                   0132 fa_create_always:	EQU	08h
+00FC45                   0133 fa_open_always:		EQU	10h
+00FC45                   0134 fa_open_append:		EQU	30h
+00FC45                   0135 
+00FC45                   0136 ; System variable indexes for api_sysvars
+00FC45                   0137 ; Index into _sysvars in globals.asm
+00FC45                   0138 ;
+00FC45                   0139 sysvar_time:		EQU	00h	; 4: Clock timer in centiseconds (incremented by 2 every VBLANK)
+00FC45                   0140 sysvar_vpd_pflags:	EQU	04h	; 1: Flags to indicate completion of VDP commands
+00FC45                   0141 sysvar_keyascii:	EQU	05h	; 1: ASCII keycode, or 0 if no key is pressed
+00FC45                   0142 sysvar_keymods:		EQU	06h	; 1: Keycode modifiers
+00FC45                   0143 sysvar_cursorX:		EQU	07h	; 1: Cursor X position
+00FC45                   0144 sysvar_cursorY:		EQU	08h	; 1: Cursor Y position
+00FC45                   0145 sysvar_scrchar:		EQU	09h	; 1: Character read from screen
+00FC45                   0146 sysvar_scrpixel:	EQU	0Ah	; 3: Pixel data read from screen (R,B,G)
+00FC45                   0147 sysvar_audioChannel:	EQU	0Dh	; 1: Audio channel
+00FC45                   0148 sysvar_audioSuccess:	EQU	0Eh	; 1: Audio channel note queued (0 = no, 1 = yes)
+00FC45                   0149 sysvar_scrWidth:	EQU	0Fh	; 2: Screen width in pixels
+00FC45                   0150 sysvar_scrHeight:	EQU	11h	; 2: Screen height in pixels
+00FC45                   0151 sysvar_scrCols:		EQU	13h	; 1: Screen columns in characters
+00FC45                   0152 sysvar_scrRows:		EQU	14h	; 1: Screen rows in characters
+00FC45                   0153 sysvar_scrColours:	EQU	15h	; 1: Number of colours displayed
+00FC45                   0154 sysvar_scrpixelIndex:	EQU	16h	; 1: Index of pixel data read from screen
+00FC45                   0155 sysvar_vkeycode:	EQU	17h	; 1: Virtual key code from FabGL
+00FC45                   0156 sysvar_vkeydown:	EQU	18h	; 1: Virtual key state from FabGL (0=up, 1=down)
+00FC45                   0157 sysvar_vkeycount:	EQU	19h	; 1: Incremented every time a key packet is received
+00FC45                   0158 sysvar_rtc:		EQU	1Ah	; 6: Real time clock data
+00FC45                   0159 sysvar_spare:		EQU	20h	; 2: Spare, previously used by rtc
+00FC45                   0160 sysvar_keydelay:	EQU	22h	; 2: Keyboard repeat delay
+00FC45                   0161 sysvar_keyrate:		EQU	24h	; 2: Keyboard repeat reat
+00FC45                   0162 sysvar_keyled:		EQU	26h	; 1: Keyboard LED status
+00FC45                   0163 sysvar_scrMode:		EQU	27h	; 1: Screen mode
+00FC45                   0164 sysvar_rtcEnable:	EQU	28h	; 1: RTC enable flag (0: disabled, 1: use ESP32 RTC)
+00FC45                   0165 
+00FC45                   0166 ; Flags for the VPD protocol
+00FC45                   0167 ;
+00FC45                   0168 vdp_pflag_cursor:	EQU	00000001b
+00FC45                   0169 vdp_pflag_scrchar:	EQU	00000010b
+00FC45                   0170 vdp_pflag_point:	EQU	00000100b
+00FC45                   0171 vdp_pflag_audio:	EQU	00001000b
+00FC45                   0172 vdp_pflag_mode:		EQU	00010000b
+00FC45                   0173 vdp_pflag_rtc:		EQU	00100000b
+00FC45                   0174 
+00FC45                   0175 ;
+00FC45                   0176 ; Macro for calling the API
+00FC45                   0177 ; Parameters:
+00FC45                   0178 ; - function: One of the function numbers listed above
+00FC45                   0179 ;
+00FC45                   0180 	MACRO moscall function
+00FC45                   0181 		LD	A, function
+00FC45                   0182 		RST.LIS	08h
+00FC45                   0183 	ENDMACRO
+00FC45                   0184 
+00FC45                   0185 	MACRO vdu function
+00FC45                   0186 		LD	A, function
+00FC45                   0187 		RST.LIS	10h
+00FC45                   0188 	ENDMACRO
+00FC45                   0189 
+00FC45                   0190 	MACRO vdu_a
+00FC45                   0191 		RST.LIS	10h
+00FC45                   0192 	ENDMACRO
+00FC45                   0015 
+00FC45                   0016 ; flood fill function
+00FC45                   0017 fill:
+00FC45 DD 21 D1 FC       0018 	LD IX,xc
+00FC49 DD 5E 00          0019 	LD E,(IX+0)
+00FC4C DD 56 01          0020 	LD D,(IX+1)
+00FC4F                   0021 
+00FC4F FD 21 D3 FC       0022 	LD IY,yc
+00FC53 FD 6E 00          0023 	LD L,(IY+0)
+00FC56 FD 66 01          0024 	LD H,(IY+1)
+00FC59                   0025 
+00FC59 DD 21 D5 FC       0026 	LD IX,target_col
+00FC5D DD 4E 00          0027 	LD C,(IX+0)
+00FC60                   0028 
+00FC60                   0029 fill_loop:
+00FC60 D5                0030 	PUSH DE
+00FC61 E5                0031 	PUSH HL
+00FC62                   0032 
+00FC62 CD A4 FC          0033 	CALL get_pixel
+00FC65 B9                0034 	CP C
+00FC66 C0                0035 	RET NZ ; exit if already painted
+00FC67                   0036 
+00FC67                   0037 	; paint pixel
+00FC67 CD 80 FC          0038 	CALL put_pixel
+00FC6A                   0039 
+00FC6A                   0040 	; flood fill x-1,y
+00FC6A 1B                0041 	DEC DE
+00FC6B CD 60 FC          0042 	CALL fill_loop
+00FC6E                   0043 
+00FC6E                   0044 	; flood fill x+1,y
+00FC6E 13                0045 	INC DE
+00FC6F 13                0046 	INC DE
+00FC70 CD 60 FC          0047 	CALL fill_loop
+00FC73                   0048 
+00FC73                   0049 	; flood fill x,y-1
+00FC73 1B                0050 	DEC DE
+00FC74 2B                0051 	DEC HL
+00FC75 CD 60 FC          0052 	CALL fill_loop
+00FC78                   0053 
+00FC78                   0054 	; flood fill x,y+1
+00FC78 23                0055 	INC HL
+00FC79 23                0056 	INC HL
+00FC7A CD 60 FC          0057 	CALL fill_loop
+00FC7D                   0058 
+00FC7D E1                0059 	POP HL
+00FC7E D1                0060 	POP DE
+00FC7F C9                0061 	RET
+00FC80                   0062 
+00FC80                   0063 put_pixel:
+00FC80 F5                0064 	PUSH AF
+00FC81                   0065 
+00FC81 3E 12             0066 	LD A,18
+00FC83 5B D7             0067 	RST.LIL $10
+00FC85 3E 00             0068 	LD A,0
+00FC87 5B D7             0069 	RST.LIL $10
+00FC89 3A D6 FC          0070 	LD A,(col)
+00FC8C 49 D7             0071 	RST.LIS $10
+00FC8E                   0072 
+00FC8E 3E 19             0073 	LD A,25
+00FC90 5B D7             0074 	RST.LIL $10
+00FC92 3E 45             0075 	LD A,69
+00FC94 5B D7             0076 	RST.LIL $10
+00FC96 5F                0077 	LD E,A
+00FC97 5B D7             0078 	RST.LIL $10
+00FC99 57                0079 	LD D,A
+00FC9A 5B D7             0080 	RST.LIL $10
+00FC9C 6F                0081 	LD L,A
+00FC9D 5B D7             0082 	RST.LIL $10
+00FC9F 67                0083 	LD H,A
+00FCA0 5B D7             0084 	RST.LIL $10
+00FCA2                   0085 
+00FCA2 F1                0086 	POP AF
+00FCA3 C9                0087 	RET
+00FCA4                   0088 
+00FCA4                   0089 get_pixel:
+00FCA4                   0090 	moscall mos_sysvars
+00FCA4 3E 08             0090 		LD	A, function
+00FCA6 49 CF             0090 		RST.LIS	08h
+00FCA8 5B DD CB 04 96    0091 	RES.LIL 2,(IX+sysvar_vpd_pflags)
+00FCAD                   0092 
+00FCAD 3E 17             0093 	LD A,23
+00FCAF 5B D7             0094 	RST.LIL $10
+00FCB1 3E 00             0095 	LD A,0
+00FCB3 5B D7             0096 	RST.LIL $10
+00FCB5 3E 84             0097 	LD A,vdp_scrpixel
+00FCB7 5B D7             0098 	RST.LIL $10
+00FCB9 5F                0099 	LD E,A ; x
+00FCBA 5B D7             0100 	RST.LIL $10
+00FCBC 57                0101 	LD D,A
+00FCBD 5B D7             0102 	RST.LIL $10
+00FCBF 6F                0103 	LD L,A ; y
+00FCC0 5B D7             0104 	RST.LIL $10
+00FCC2 67                0105 	LD H,A
+00FCC3 5B D7             0106 	RST.LIL $10
+00FCC5                   0107 
+00FCC5                   0108 gp_loop:
+00FCC5 5B DD CB 04 56    0109 	BIT.LIL 2,(IX+sysvar_vpd_pflags)
+00FCCA 28 F9             0110 	JR Z,gp_loop
+00FCCC                   0111 
+00FCCC 5B DD 7E 16       0112 	LD.LIL	A,(IX+sysvar_scrpixelIndex)
+00FCD0 C9                0113 	RET
+00FCD1                   0114 
+00FCD1 00 00             0115 xc:	DW 0
+00FCD3 00 00             0116 yc:	DW 0
+00FCD5 00                0117 target_col: DB 0
+00FCD6 0F                0118 col: DB 15

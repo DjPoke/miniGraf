@@ -4,7 +4,7 @@
    40 REM * by Bruno Vignoli, 2023 MIT *
    50 REM ******************************
    60 :
-   70 MODE 8:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0
+   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:HIMEM=&FBFF:GOSUB 7270
    80 minx%=80:maxx%=239:miny%=10:maxy%=129:maxcmd%=2000:paper%=0:pen%=15:xc%=160:yc%=65:stp%=1:tool$="p":cpt%=0
    90 DIM cmd$(maxcmd%):DIM x%(maxcmd%):DIM y%(maxcmd%):DIM c%(maxcmd%)
   100 oldtool$="":oldxc%=0:oldyc%=0
@@ -139,7 +139,7 @@
  6030 IF tool$="m" THEN GCOL 0,pen%:PLOT 4,xc%,yc%
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="d" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
- 6060 IF tool$="f" THEN GCOL 0,pen%:PLOT 128,xc%,yc%
+ 6060 IF tool$="f" THEN GCOL 0,pen%:PROCfill(xc%,yc%,paper%,pen%)
  6070 oldxc%=xc%:oldyc%=yc%:RETURN
  6080 cpt%=cpt%+1:cmd$(cpt%)=tool$:x%(cpt%)=xc%:y%(cpt%)=yc%:c%(cpt%)=pen%
  6090 oldtool$=tool$:RETURN
@@ -161,3 +161,15 @@
  7150 REM ********** wait key
  7160 a$=GET$
  7170 RETURN
+ 7180 DEF PROCfill(x%,y%,tc%,c%)
+ 7190 ?&FCD1=(x% AND &FF)
+ 7200 ?&FCD2=(x% AND &FF00) / &100
+ 7210 ?&FCD3=(y% AND &FF)
+ 7220 ?&FCD4=(y% AND &FF00) / &100
+ 7230 ?&FCD5=tc%
+ 7240 ?&FCD6=c%
+ 7250 CALL &FC00
+ 7260 ENDPROC
+ 7270 REM ********** load flood fill asm function
+ 7280 *LOAD fill.bin &04FC00
+ 7290 RETURN
