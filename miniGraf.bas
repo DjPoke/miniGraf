@@ -4,7 +4,7 @@
    40 REM * by Bruno Vignoli, 2023 MIT *
    50 REM ******************************
    60 :
-   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:GOSUB 7180
+   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0
    80 minx%=80:maxx%=239:miny%=10:maxy%=129:maxcmd%=2000:paper%=0:pen%=15:xc%=160:yc%=65:stp%=1:tool$="p":cpt%=0
    90 DIM cmd maxcmd%:DIM x maxcmd%:DIM y maxcmd%:DIM c maxcmd%
   100 oldtool$="":oldxc%=0:oldyc%=0
@@ -139,15 +139,10 @@
  6030 IF tool$="m" THEN GCOL 0,pen%:PLOT 4,xc%,yc%
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="d" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
- 6060 IF tool$="f" THEN GOSUB 6100
+ 6060 IF tool$="f" THEN GCOL 0,pen%:PLOT 128,xc%,yc%
  6070 oldxc%=xc%:oldyc%=yc%:RETURN
  6080 cpt%=cpt%+1:?(cmd+cpt%)=ASC(tool$):?(x+cpt%)=xc%:?(y+cpt%)=yc%:?(c+cpt%)=pen%
  6090 oldtool$=tool$:RETURN
- 6100 REM ********** call asm function to flood fill
- 6110 xcol=xc%:ycol=yc%
- 6120 target_col=paper%:col=pen%
- 6130 CALL fill
- 6140 RETURN
  7000 REM ********** undo
  7010 IF cpt%>0 THEN cpt%=cpt%-1:GOSUB 2150:GOSUB 7030:RETURN
  7020 RETURN
@@ -166,115 +161,3 @@
  7150 REM ********** wait key
  7160 a$=GET$
  7170 RETURN
- 7180 HIMEM=&EFFF
- 7190 DIM code 256
- 7200 P%=code
- 7210 FOR opt%=0 TO 2 STEP 2
- 7220 [OPT opt%
- 7230 .swapx DEFW 0
- 7240 .swapy DEFW 0
- 7250 .swapc DEFB 0
- 7260 .xcol DEFW 0
- 7270 .ycol DEFW 0
- 7280 .target_col DEFB 0
- 7290 .col DEFB 0
- 7300
- 7310 .fill
- 7320 LD IX,xcol
- 7330 LD E,(IX+0)
- 7340 LD D,(IX+1)
- 7350 LD IY,ycol
- 7360 LD L,(IY+0)
- 7370 LD H,(IY+1)
- 7380 LD IX,target_col
- 7390 LD C,(IX+0)
- 7400
- 7410 .fill_loop
- 7420 PUSH DE
- 7430 PUSH HL
- 7440
- 7450 CALL get_pixel
- 7460 CP C
- 7470 RET NZ ; exit if already painted
- 7480
- 7490 ; paint pixel
- 7500 CALL put_pixel
- 7510
- 7520 ; flood fill x-1,y
- 7530 DEC DE
- 7540 CALL fill_loop
- 7550
- 7560 ; flood fill x+1,y
- 7570 INC DE
- 7580 INC DE
- 7590 CALL fill_loop
- 7600
- 7610 ; flood fill x,y-1
- 7620 DEC DE
- 7630 DEC HL
- 7640 CALL fill_loop
- 7650
- 7660 ; flood fill x,y+1
- 7670 INC HL
- 7680 INC HL
- 7690 CALL fill_loop
- 7700
- 7710 POP HL
- 7720 POP DE
- 7730 RET
- 7740
- 7750 .put_pixel
- 7760 PUSH AF
- 7770 
- 7780 LD A,18
- 7790 RST &10
- 7800 LD A,0
- 7810 RST &10
- 7820 LD A,col
- 7830 RST &10
- 7840 
- 7850 LD A,25
- 7860 RST &10
- 7870 LD A,69
- 7880 RST &10
- 7890 LD A,E
- 7900 RST &10
- 7910 LD A,D
- 7920 RST &10
- 7930 LD A,L
- 7940 RST &10
- 7950 LD A,H
- 7960 RST &10
- 7970
- 7980 POP AF
- 7990 RET
- 8000
- 8010 .get_pixel
- 8020 LD A,&08
- 8030 RST &08
- 8040 RES 2,(IX+&04)
- 8050
- 8060 LD A,23
- 8070 RST &10
- 8080 LD A,0
- 8090 RST &10
- 8100 LD A,&84
- 8110 RST &10
- 8120 LD A,E
- 8130 RST &10
- 8140 LD A,D
- 8150 RST &10
- 8160 LD A,L
- 8170 RST &10
- 8180 LD A,H
- 8190 RST &10
- 8200
- 8210 .gp_loop
- 8220 BIT 2,(IX+&04)
- 8230 JR Z,gp_loop
- 8240
- 8250 LD A,(IX+&16)
- 8260 RET
- 8270 ]
- 8280 NEXT
- 8290 RETURN
