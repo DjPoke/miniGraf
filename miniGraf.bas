@@ -139,7 +139,7 @@
  6030 IF tool$="m" THEN GCOL 0,pen%:PLOT 4,xc%,yc%
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="d" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
- 6060 IF tool$="f" THEN GCOL 0,pen%:PLOT 4,xc%,yc%:REM todo! change me when possible
+ 6060 IF tool$="f" THEN GCOL 0,pen%:PLOT 128,xc%,yc%
  6070 oldxc%=xc%:oldyc%=yc%:RETURN
  6080 cpt%=cpt%+1:cmd$(cpt%)=tool$:x%(cpt%)=xc%:y%(cpt%)=yc%:c%(cpt%)=pen%
  6090 oldtool$=tool$:RETURN
