@@ -4,7 +4,7 @@
    40 REM * by Bruno Vignoli, 2023 MIT *
    50 REM ******************************
    60 :
-   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:HIMEM=&FBFF:GOSUB 7270
+   70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0:GOSUB 7230
    80 minx%=80:maxx%=239:miny%=10:maxy%=129:maxcmd%=2000:paper%=0:pen%=15:xc%=160:yc%=65:stp%=1:tool$="p":cpt%=0
    90 DIM cmd$(maxcmd%):DIM x%(maxcmd%):DIM y%(maxcmd%):DIM c%(maxcmd%)
   100 oldtool$="":oldxc%=0:oldyc%=0
@@ -162,14 +162,114 @@
  7160 a$=GET$
  7170 RETURN
  7180 DEF PROCfill(x%,y%,tc%,c%)
- 7190 ?&FCD1=(x% AND &FF)
- 7200 ?&FCD2=(x% AND &FF00) / &100
- 7210 ?&FCD3=(y% AND &FF)
- 7220 ?&FCD4=(y% AND &FF00) / &100
- 7230 ?&FCD5=tc%
- 7240 ?&FCD6=c%
- 7250 CALL &FC00
- 7260 ENDPROC
- 7270 REM ********** load flood fill asm function
- 7280 *LOAD fill.bin &04FC00
- 7290 RETURN
+ 7190 ?xcol=x%:?ycol=y%
+ 7200 ?target_col=tc%:?col=c%
+ 7210 CALL fill
+ 7220 ENDPROC
+ 7230 DIM code 200
+ 7240 FOR opt%=1 TO 3 STEP 2
+ 7250 P%=code
+ 7300 [OPT opt%
+ 7310 .fill
+ 7320 LD IX,xcol
+ 7330 LD E,(IX+0)
+ 7340 LD D,(IX+1)
+ 7350 LD IY,ycol
+ 7360 LD L,(IY+0)
+ 7370 LD H,(IY+1)
+ 7380 LD IX,target_col
+ 7390 LD C,(IX+0)
+ 7400
+ 7410 .fill_loop
+ 7420 PUSH DE
+ 7430 PUSH HL
+ 7440 CALL get_pixel
+ 7450 CP C
+ 7460 RET NZ ; exit if already painted
+ 7470
+ 7480 ; paint pixel
+ 7490 CALL put_pixel
+ 7500
+ 7510 ; flood fill x-1,y
+ 7520 DEC DE
+ 7530 CALL fill_loop
+ 7540
+ 7550 ; flood fill x+1,y
+ 7560 INC DE
+ 7570 INC DE
+ 7580 CALL fill_loop
+ 7590
+ 7600 ; flood fill x,y-1
+ 7610 DEC DE
+ 7620 DEC HL
+ 7630 CALL fill_loop
+ 7640
+ 7650 ; flood fill x,y+1
+ 7660 INC HL
+ 7670 INC HL
+ 7680 CALL fill_loop
+ 7690
+ 7700 POP HL
+ 7710 POP DE
+ 7720 RET
+ 7730
+ 7740 .put_pixel
+ 7750 PUSH AF
+ 7760
+ 7770 LD A,18
+ 7780 RST &10
+ 7790 LD A,0
+ 7800 RST &10
+ 7810 LD A,(col)
+ 7820 RST &10
+ 7830
+ 7840 LD A,25
+ 7850 RST &10
+ 7860 LD A,69
+ 7870 RST &10
+ 7880 LD E,A
+ 7890 RST &10
+ 7900 LD D,A
+ 7910 RST &10
+ 7920 LD L,A
+ 7930 RST &10
+ 7940 LD H,A
+ 7950 RST &10
+ 7960
+ 7970 POP AF
+ 7980 RET
+ 7990
+ 8000 .get_pixel
+ 8010 LD A,&08
+ 8020 RST &08
+ 8030 RES 2,(IX+&04)
+ 8040
+ 8050 LD A,23
+ 8060 RST &10
+ 8070 XOR A
+ 8080 RST &10
+ 8090 LD A,&84
+ 8100 RST &10
+ 8110 LD E,A ; x
+ 8120 RST &10
+ 8130 LD D,A
+ 8140 RST &10
+ 8150 LD L,A ; y
+ 8160 RST &10
+ 8170 LD H,A
+ 8180 RST &10
+ 8190
+ 8200 .gp_loop
+ 8210 BIT 2,(IX+&04)
+ 8220 JR Z,gp_loop
+ 8230
+ 8240 LD A,(IX+&16)
+ 8250 RET
+ 8260
+ 8270 .xcol DEFW 0
+ 8280 .ycol DEFW 0
+ 8290 .target_col DEFB 0
+ 8300 .col DEFB 15
+ 8310 ]
+ 8320 NEXT
+ 8330 RETURN
