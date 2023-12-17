@@ -23,8 +23,8 @@
   230 IF INKEY(-42) THEN GOSUB 7180:yc%=yc%+stp%:IF yc%>maxy% THEN yc%=maxy%
   240 IF INKEY(-26) THEN GOSUB 7180:xc%=xc%-stp%:IF xc%<minx% THEN xc%=minx%
   250 IF INKEY(-122) THEN GOSUB 7180:xc%=xc%+stp%:IF xc%>maxx% THEN xc%=maxx%
-  260 IF INKEY(-56) THEN tool$="p":GOSUB 2120:PRINT TAB(0,17);"Plot tool":GOSUB 6000:GOSUB 2290:key%=-56:GOSUB 2210
-  270 IF INKEY(-51) THEN tool$="d":GOSUB 2120:PRINT TAB(0,17);"Draw tool":GOSUB 6000:GOSUB 2290:key%=-51:GOSUB 2210
+  260 IF INKEY(-56) THEN tool$="p":GOSUB 6000:GOSUB 2290:key%=-56:GOSUB 2210
+  270 IF INKEY(-51) THEN tool$="d":GOSUB 6000:GOSUB 2290:key%=-51:GOSUB 2210
   280 IF INKEY(-85) THEN GOSUB 2030:GOSUB 7120:key%=-85:GOSUB 2210
   290 IF INKEY(-94) AND NOT INKEY(-5) AND NOT INKEY(-6) THEN GOSUB 7120:pen%=(pen%+1) MOD 64:GOSUB 2000:GOSUB 7120
   300 IF INKEY(-24) AND NOT INKEY(-5) AND NOT INKEY(-6) THEN GOSUB 7120:pen%=(pen%-1):GOSUB 2230:GOSUB 2000:GOSUB 7120
@@ -35,13 +35,15 @@
   350 IF INKEY(-82) AND INKEY(-4) THEN GOSUB 3000:key%=-82:GOSUB 2210
   360 IF INKEY(-87) AND INKEY(-4) THEN GOSUB 4000:key%=-87:GOSUB 2210
   370 IF INKEY(-35) AND INKEY(-4) THEN GOSUB 5000:key%=-35:GOSUB 2210
-  380 IF INKEY(-102) THEN tool$="m":GOSUB 2120:PRINT TAB(0,17);"Move tool":GOSUB 6000:GOSUB 2290:key%=-102:GOSUB 2210
-  390 IF INKEY(-68) THEN tool$="f":GOSUB 2120:PRINT TAB(0,17);"Fill tool":GOSUB 6000:GOSUB 2290:key%=-68:GOSUB 2210
+  380 IF INKEY(-102) THEN tool$="m":GOSUB 6000:GOSUB 2290:key%=-102:GOSUB 2210
+  390 IF INKEY(-68) THEN tool$="f":GOSUB 6000:GOSUB 2290:key%=-68:GOSUB 2210
   410 IF INKEY(-54) THEN GOSUB 7000:GOSUB 2120:PRINT TAB(0,17);"Undone":GOSUB 7120
   420 IF INKEY(-90) THEN cpt%=0:GOSUB 2370:GOSUB 7030:key%=-90:GOSUB 2210:oldxc%=centx%:oldyc%=centy%:PLOT 4,oldxc%,oldyc%
   430 IF INKEY(-30) THEN VDU 23,1,1:VDU 23,0,&C0,1:MODE 1:CLS:PRINT"Done!":GOSUB 7120:END
-  440 GOSUB 7150
-  450 GOTO 210
+  440 IF INKEY(-36) THEN tool$="t":GOSUB 6000:GOSUB 2290:key%=-36:GOSUB 2210
+  450 IF INKEY(-52) THEN tool$="r":GOSUB 6000:GOSUB 2290:key%=-52:GOSUB 2210
+  460 GOSUB 7150
+  470 GOTO 210
  2000 REM ********** change pen
  2010 GCOL 0,pen%:COLOUR 15:GOSUB 2120:GOSUB 2290
  2020 RETURN
@@ -53,13 +55,14 @@
  2080 COLOUR 11:PRINT TAB(0,22);"    save,     load,     export BASIC":COLOUR 14:PRINT TAB(0,22);"[S]":PRINT TAB(10,22);"[L]":PRINT TAB(20,22);"[E]"
  2090 COLOUR 11:PRINT TAB(0,23);"               inc/dec cursor speed":COLOUR 14:PRINT TAB(0,23);"[control][+/-]"
  2100 COLOUR 11:PRINT TAB(0,24);"    fill,     undo":COLOUR 14:PRINT TAB(0,24);"[f]":PRINT TAB(10,24);"[u]"
- 2105 COLOUR 11:PRINT TAB(0,25);"      new,       quit":COLOUR 14:PRINT TAB(0,25);"[del]":PRINT TAB(11,25);"[f12]"
+ 2102 COLOUR 11:PRINT TAB(0,25);"    triangle,     rectangle":COLOUR 14:PRINT TAB(0,25);"[t]":PRINT TAB(14,25);"[r]"
+ 2105 COLOUR 11:PRINT TAB(0,26);"      new,       quit":COLOUR 14:PRINT TAB(0,26);"[del]":PRINT TAB(11,26);"[f12]"
  2110 COLOUR 15:RETURN
  2120 REM ********** clear text area
- 2130 FOR i%=17 TO 25:PRINT TAB(0,i%);STRING$(40," ");:NEXT i%
+ 2130 FOR i%=17 TO 26:PRINT TAB(0,i%);STRING$(40," ");:NEXT i%
  2140 RETURN
  2150 REM ********** clear all
- 2160 COLOUR 128:CLS:?(cmd+0)=ASC("c"):?(c+0)=paper%
+ 2160 COLOUR 128:CLS:?(cmd+0)=ASC("c"):?(c+0)=paper%:?(x+0)=centx%:?(y+0)=centy%
  2170 GCOL 0,15:PLOT 4,minx%-1,miny%-1:PLOT 5,maxx%+1,miny%-1
  2180 PLOT 5,maxx%+1,maxy%+1:PLOT 5,minx%-1,maxy%+1:PLOT 5,minx%-1,miny%-1
  2185 GCOL 0,paper%:PLOT 4,minx%,miny%:PLOT 101,maxx%,maxy%
@@ -74,7 +77,8 @@
  2270 IF paper%<0 THEN paper%=paper%+64
  2280 RETURN
  2290 REM ********** show infos
- 2300 GOSUB 2120:PRINT TAB(0,17);STR$(cpt%);" dots - Pen:";STR$(pen%)+" - Paper:";STR$(paper%);" - Steps:"+STR$(stp%):PRINT TAB(0,19);"[h] for Help"
+ 2300 GOSUB 2120:GOSUB 7330
+ 2302 PRINT TAB(0,19);STR$(cpt%);" dots - Pen:";STR$(pen%)+" - Paper:";STR$(paper%);" - Steps:"+STR$(stp%):PRINT TAB(0,21);"[h] for Help"
  2305 GCOL 0,pen%:PLOT 4,20,45:PLOT 101,60,85
  2310 RETURN
  2320 REM ********** limit steps
@@ -117,21 +121,24 @@
  5050 INPUT"Origin x:",xo%:INPUT"Origin y:",yo%
  5060 file=OPENOUT f$
  5070 FOR i%=0 TO cpt%
- 5080 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5190:a$=a$+" "
+ 5080 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5210:a$=a$+" "
  5090 IF ?(cmd+i%)=ASC("c") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":PLOT 4,"+STR$(xo%)+","+STR$(yo%)+":PLOT 101,"+STR$(xo%+159)+","+STR$(yo%+119)
  5100 IF ?(cmd+i%)=ASC("m") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
  5110 IF ?(cmd+i%)=ASC("p") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 69,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
  5120 IF ?(cmd+i%)=ASC("d") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 5,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
  5130 IF ?(cmd+i%)=ASC("f") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 128,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5140 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
- 5150 NEXT i%
- 5160 CLOSE#file
- 5170 GOSUB 2120:PRINT TAB(0,17);"File exported !"
- 5180 RETURN
- 5190 REPEAT
- 5200 IF LEN(a$)<5 THEN a$ =" "+a$
- 5210 UNTIL LEN(a$)=5
- 5220 RETURN
+ 5140 IF ?(cmd+i%)=ASC("t") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-2)-80+xo%)+","+STR$(?(y+i%-2)-10+yo%)
+ 5145 IF ?(cmd+i%)=ASC("t") THEN a$=a$+":PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 85,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5150 IF ?(cmd+i%)=ASC("r") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 101,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5160 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
+ 5170 NEXT i%
+ 5180 CLOSE#file
+ 5190 GOSUB 2120:PRINT TAB(0,17);"File exported !"
+ 5200 RETURN
+ 5210 REPEAT
+ 5220 IF LEN(a$)<5 THEN a$ =" "+a$
+ 5230 UNTIL LEN(a$)=5
+ 5240 RETURN
  6000 REM ********** drawing
  6010 IF cpt%=maxcmd% THEN VDU 7:RETURN
  6020 cpt%=cpt%+1
@@ -139,9 +146,13 @@
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="d" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
  6060 IF tool$="f" THEN GCOL 0,pen%:PLOT 128,xc%,yc%
- 6070 oldxc%=xc%:oldyc%=yc%
- 6080 ?(cmd+cpt%)=ASC(tool$):?(x+cpt%)=xc%:?(y+cpt%)=yc%:?(c+cpt%)=pen%
- 6090 RETURN
+ 6070 IF tool$="t" AND cpt%>2 THEN GCOL 0,pen%:PLOT 4,?(x+cpt%-2),?(y+cpt%-2):PLOT 4,?(x+cpt%-1),?(y+cpt%-1):PLOT 85,xc%,yc%
+ 6080 IF tool$="r" AND cpt%>1 THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 101,xc%,yc%
+ 6090 IF tool$="t" AND cpt%<=2 THEN cpt%=cpt%-1:VDU 7:RETURN
+ 6100 IF tool$="r" AND cpt%<=1 THEN cpt%=cpt%-1:VDU 7:RETURN
+ 6110 oldxc%=xc%:oldyc%=yc%
+ 6120 ?(cmd+cpt%)=ASC(tool$):?(x+cpt%)=xc%:?(y+cpt%)=yc%:?(c+cpt%)=pen%
+ 6130 RETURN
  7000 REM ********** undo
  7010 IF cpt%>0 THEN cpt%=cpt%-1
  7011 IF cpt%=0 THEN GOSUB 2150:oldxc%=centx%:oldyc%=centy%
@@ -153,6 +164,8 @@
  7060 IF ?(cmd+i%)=ASC("m") THEN GCOL 0,?(c+i%):PLOT 4,?(x+i%),?(y+i%)
  7070 IF ?(cmd+i%)=ASC("p") THEN GCOL 0,?(c+i%):PLOT 69,?(x+i%),?(y+i%)
  7080 IF ?(cmd+i%)=ASC("d") THEN GOSUB 7210
+ 7084 IF ?(cmd+i%)=ASC("t") THEN GOSUB 7240
+ 7088 IF ?(cmd+i%)=ASC("r") THEN GOSUB 7270
  7090 IF ?(cmd+i%)=ASC("f") THEN GCOL 0,?(c+i%):PLOT 128,?(x+i%),?(y+i%)
  7100 NEXT i%:GOSUB 2000
  7110 RETURN
@@ -166,6 +179,19 @@
  7190 FOR j%=1 TO 3:GOSUB 7150:NEXT j%
  7200 RETURN
  7210 REM draw line
- 7220 IF i%>1 THEN PLOT 4,?(x+i%-1),?(y+i%-1):GCOL 0,?(c+i%):PLOT 5,?(x+i%),?(y+i%)
- 7230 IF i%=1 THEN PLOT 4,centx%,centy%:GCOL 0,?(c+i%):PLOT 5,?(x+i%),?(y+i%)
- 7240 RETURN
+ 7220 GCOL 0,?(c+i%):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 5,?(x+i%),?(y+i%)
+ 7230 RETURN
+ 7240 REM draw triangle
+ 7250 GCOL 0,?(c+i%):PLOT 4,?(x+i%-2),?(y+i%-2):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 85,?(x+i%),?(y+i%)
+ 7260 RETURN
+ 7270 REM draw rectangle
+ 7280 GCOL 0,?(c+i%):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 101,?(x+i%),?(y+i%)
+ 7290 RETURN
+ 7330 REM show tool info
+ 7340 IF tool$="m" THEN PRINT TAB(0,17);"Move Tool"
+ 7350 IF tool$="p" THEN PRINT TAB(0,17);"Plot Tool"
+ 7360 IF tool$="d" THEN PRINT TAB(0,17);"Draw Tool"
+ 7370 IF tool$="t" THEN PRINT TAB(0,17);"Triangle Tool"
+ 7380 IF tool$="r" THEN PRINT TAB(0,17);"Rectangle Tool"
+ 7390 IF tool$="f" THEN PRINT TAB(0,17);"Fill Tool"
+ 7400 RETURN
