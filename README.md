@@ -13,9 +13,10 @@ Keys list:
 
 m			move cursor at position
 p			plot at cursor position
-d			draw a line
+l			draw a line
 t 			draw a filled triangle
 r			draw a filled rectangle
+d			draw a filled disc
 f			fill (todo!!!)
 
 arrow Keys		move the cursor
