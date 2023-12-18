@@ -9,3 +9,4 @@ miniGraf is written in BBC BASIC and is under MIT licence.
 [![miniGraf](screenshot.jpg)](https://www.youtube.com/watch?v=9bjvjwZnP1s)
 
 While in miniGraf, type h to view help.
+(Fill function will be implemented in the futur)
