@@ -1,13 +1,13 @@
-   10 REM ******************************
-   20 REM *         miniGraf           *
-   30 REM * (for interactive fictions) *
-   40 REM * by Bruno Vignoli, 2023 MIT *
-   50 REM ******************************
+   10 REM *********************************
+   20 REM *         miniGraf              *
+   30 REM * (for interactive fictions)    *
+   40 REM * by Bruno Vignoli, 2023-24 MIT *
+   50 REM *********************************
    60 :
    70 MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0
    80 minx%=80:maxx%=239:miny%=10:maxy%=129:centx%=160:centy%=65:maxcmd%=2000:paper%=0:pen%=15:xc%=centx%:yc%=centy%:stp%=8:tool$="p":cpt%=0
    90 DIM cmd maxcmd%:DIM x maxcmd%:DIM y maxcmd%:DIM c maxcmd%
-  100 oldtool$="":oldxc%=xc%:oldyc%=yc%
+  100 oldxc%=xc%:oldyc%=yc%
   110 COLOUR 14:PRINT TAB(15,4);"miniGraf"
   120 PRINT TAB(15,5);STRING$(8,"=")
   130 PRINT TAB(1,8);"a vectorial graphic tool by B.Vignoli"
@@ -15,7 +15,6 @@
   150 COLOUR 9:PRINT TAB(7,20);"Press [RETURN] to start !"
   160 IF GET$<>CHR$(13) THEN GOTO 160
   170 :
-  180 :
   190 REM ********** menu
   200 GOSUB 2150:GOSUB 2000
   210 *FX 19
@@ -121,17 +120,19 @@
  5040 INPUT"Start line number:",ln%:INPUT"Line's step:",st%
  5050 INPUT"Origin x:",xo%:INPUT"Origin y:",yo%
  5060 file=OPENOUT f$
+ 5062 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5210:a$=a$+" REM MODE 8:VDU 26:COLOUR 128:CLS:VDU 23,1,0:VDU 23,0,&C0,0"
+ 5064 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
  5070 FOR i%=0 TO cpt%
  5080 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5210:a$=a$+" "
- 5090 IF ?(cmd+i%)=ASC("c") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":PLOT 4,"+STR$(xo%)+","+STR$(yo%)+":PLOT 101,"+STR$(xo%+159)+","+STR$(yo%+119)
- 5100 IF ?(cmd+i%)=ASC("m") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5110 IF ?(cmd+i%)=ASC("p") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 69,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5120 IF ?(cmd+i%)=ASC("l") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 5,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5130 IF ?(cmd+i%)=ASC("f") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 128,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5140 IF ?(cmd+i%)=ASC("t") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-2)-80+xo%)+","+STR$(?(y+i%-2)-10+yo%)
- 5145 IF ?(cmd+i%)=ASC("t") THEN a$=a$+":PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 85,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5150 IF ?(cmd+i%)=ASC("r") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 101,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
- 5155 IF ?(cmd+i%)=ASC("d") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-80+xo%)+","+STR$(?(y+i%-1)-10+yo%):a$=a$+":PLOT 157,"+STR$(?(x+i%)-80+xo%)+","+STR$(?(y+i%)-10+yo%)
+ 5090 IF ?(cmd+i%)=ASC("c") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":PLOT 4,"+STR$(xo%)+","+STR$(yo%)+":PLOT 101,"+STR$(xo%+maxx%-minx%)+","+STR$(yo%+maxy%-miny%)
+ 5100 IF ?(cmd+i%)=ASC("m") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5110 IF ?(cmd+i%)=ASC("p") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 69,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5120 IF ?(cmd+i%)=ASC("l") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-minx%+xo%)+","+STR$(?(y+i%-1)-miny%+yo%):a$=a$+":PLOT 5,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5130 IF ?(cmd+i%)=ASC("f") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 128,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5140 IF ?(cmd+i%)=ASC("t") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-2)-minx%+xo%)+","+STR$(?(y+i%-2)-miny%+yo%)
+ 5145 IF ?(cmd+i%)=ASC("t") THEN a$=a$+":PLOT 4,"+STR$(?(x+i%-1)-minx%+xo%)+","+STR$(?(y+i%-1)-miny%+yo%):a$=a$+":PLOT 85,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5150 IF ?(cmd+i%)=ASC("r") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-minx%+xo%)+","+STR$(?(y+i%-1)-miny%+yo%):a$=a$+":PLOT 101,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
+ 5155 IF ?(cmd+i%)=ASC("d") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":":a$=a$+"PLOT 4,"+STR$(?(x+i%-1)-minx%+xo%)+","+STR$(?(y+i%-1)-miny%+yo%):a$=a$+":PLOT 157,"+STR$(?(x+i%)-minx%+xo%)+","+STR$(?(y+i%)-miny%+yo%)
  5160 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
  5170 NEXT i%
  5180 CLOSE#file
@@ -165,7 +166,7 @@
  7030 REM ********** redraw image
  7040 VDU 24,minx%;maxy%;maxx%;miny%;
  7045 FOR i%=0 TO cpt%
- 7050 IF ?(cmd+i%)=ASC("c") THEN GCOL 0,?(c+i%):PLOT 4,80,10:PLOT 101,239,129
+ 7050 IF ?(cmd+i%)=ASC("c") THEN GCOL 0,?(c+i%):PLOT 4,minx%,miny%:PLOT 101,maxx%,maxy%
  7060 IF ?(cmd+i%)=ASC("m") THEN GCOL 0,?(c+i%):PLOT 4,?(x+i%),?(y+i%)
  7070 IF ?(cmd+i%)=ASC("p") THEN GCOL 0,?(c+i%):PLOT 69,?(x+i%),?(y+i%)
  7080 IF ?(cmd+i%)=ASC("l") THEN GOSUB 7210
