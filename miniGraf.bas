@@ -120,8 +120,6 @@
  5040 INPUT"Start line number:",ln%:INPUT"Line's step:",st%
  5050 INPUT"Origin x:",xo%:INPUT"Origin y:",yo%
  5060 file=OPENOUT f$
- 5062 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5210:a$=a$+" REM MODE 8:VDU 26:COLOUR 128:CLS:VDU 23,1,0:VDU 23,0,&C0,0"
- 5064 FOR j%=1 TO LEN(a$):BPUT#file,ASC(MID$(a$,j%,1)):NEXT j%:BPUT#file,13:BPUT#file,10
  5070 FOR i%=0 TO cpt%
  5080 a$=STR$(ln%):ln%=ln%+st%:GOSUB 5210:a$=a$+" "
  5090 IF ?(cmd+i%)=ASC("c") THEN a$=a$+"GCOL 0,"+STR$(?(c+i%))+":PLOT 4,"+STR$(xo%)+","+STR$(yo%)+":PLOT 101,"+STR$(xo%+maxx%-minx%)+","+STR$(yo%+maxy%-miny%)
