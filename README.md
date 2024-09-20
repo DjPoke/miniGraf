@@ -6,8 +6,11 @@ You can even export a BASIC source code file with your graphics inside.
 Push 'h' key for Help.
 
 miniGraf is written in BBC BASIC and is under MIT licence.
-[![miniGraf](screenshot1.jpg)]()
+[![miniGraf](screenshot1.jpg)](https://www.youtube.com/watch?v=Z0MijlmQZ1Q&ab_channel=BrunoVignoli)
 [![miniGraf_demo](screenshot2.jpg)]()
 
 While in miniGraf, type h to view help.
 ("Fill" function will be implemented in the futur, if possible)
+
+When you export a picture you've done, don't forget to add this line of code before : "MODE 8:VDU 26:COLOUR 140:CLS:VDU 23,1,0:VDU 23,0,&C0,0"
+
