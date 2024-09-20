@@ -10,7 +10,7 @@
   100 oldtool$="":oldxc%=xc%:oldyc%=yc%
   110 COLOUR 14:PRINT TAB(15,4);"miniGraf"
   120 PRINT TAB(15,5);STRING$(8,"=")
-  130 PRINT TAB(5,8);"a graphic tool by B. Vignoli"
+  130 PRINT TAB(1,8);"a vectorial graphic tool by B.Vignoli"
   140 COLOUR 11:PRINT TAB(0,10);STRING$(40,"=")
   150 COLOUR 9:PRINT TAB(7,20);"Press [RETURN] to start !"
   160 IF GET$<>CHR$(13) THEN GOTO 160
@@ -50,17 +50,17 @@
  2020 RETURN
  2030 REM ********** help
  2040 GOSUB 2120:COLOUR 11:PRINT TAB(0,17);"HELP:"
- 2050 COLOUR 11:PRINT TAB(0,19);"         pos,     plot,     line":COLOUR 14:PRINT TAB(0,19);"[Arrows]":PRINT TAB(14,19);"[p]":PRINT TAB(24,19);"[l]":
- 2060 COLOUR 11:PRINT TAB(0,20);"    move,     disc":COLOUR 14:PRINT TAB(0,20);"[m]":PRINT TAB(10,20);"[d]"
- 2070 COLOUR 11:PRINT TAB(0,21);"    triangle,     rectangle":COLOUR 14:PRINT TAB(0,21);"[t]":PRINT TAB(14,21);"[r]"
- 2080 COLOUR 11:PRINT TAB(0,22);"     set pen,         set paper":COLOUR 14:PRINT TAB(0,22);"[+-]":PRINT TAB(14,22);"[Alt+-]"
- 2090 COLOUR 11:PRINT TAB(0,23);"         save,          load":COLOUR 14:PRINT TAB(0,23);"[ctrl s]":PRINT TAB(15,23);"[ctrl l]"
- 2100 COLOUR 11:PRINT TAB(0,24);"         speed,          export":COLOUR 14:PRINT TAB(0,24);"[ctrl+-]":PRINT TAB(16,24);"[ctrl e]"
- 2110 COLOUR 11:PRINT TAB(0,25);"    fill,     undo":COLOUR 14:PRINT TAB(0,25);"[f]":PRINT TAB(10,25);"[u]"
- 2114 COLOUR 11:PRINT TAB(0,26);"      new,       quit":COLOUR 14:PRINT TAB(0,26);"[del]":PRINT TAB(11,26);"[f12]"
- 2118 COLOUR 15:RETURN
+ 2050 rt%=18:RESTORE 8000
+ 2060 READ a$
+ 2065 IF a$="STP" THEN GOTO 2090
+ 2070 IF a$="RET" THEN rt%=rt%+1:PRINT TAB(0,rt%);:GOTO 2060
+ 2075 IF a$="C11" THEN COLOUR 11:GOTO 2060
+ 2080 IF a$="C14" THEN COLOUR 14:GOTO 2060
+ 2085 PRINT a$;:GOTO 2060
+ 2090 COLOUR 15
+ 2100 RETURN
  2120 REM ********** clear text area
- 2130 FOR i%=17 TO 26:PRINT TAB(0,i%);STRING$(40," ");:NEXT i%
+ 2130 FOR i%=17 TO 28:PRINT TAB(0,i%);STRING$(40," ");:NEXT i%
  2140 RETURN
  2150 REM ********** clear all
  2160 COLOUR 128:CLS:?(cmd+0)=ASC("c"):?(c+0)=paper%:?(x+0)=centx%:?(y+0)=centy%
@@ -143,7 +143,7 @@
  5240 RETURN
  6000 REM ********** drawing
  6010 IF cpt%=maxcmd% THEN VDU 7:RETURN
- 6020 cpt%=cpt%+1
+ 6020 cpt%=cpt%+1:VDU 24,minx%;maxy%;maxx%;miny%;
  6030 IF tool$="m" THEN GCOL 0,pen%:PLOT 4,xc%,yc%
  6040 IF tool$="p" THEN GCOL 0,pen%:PLOT 69,xc%,yc%
  6050 IF tool$="l" THEN GCOL 0,pen%:PLOT 4,oldxc%,oldyc%:PLOT 5,xc%,yc%
@@ -156,14 +156,15 @@
  6105 IF tool$="d" AND cpt%<=1 THEN cpt%=cpt%-1:VDU 7:RETURN
  6110 oldxc%=xc%:oldyc%=yc%
  6120 ?(cmd+cpt%)=ASC(tool$):?(x+cpt%)=xc%:?(y+cpt%)=yc%:?(c+cpt%)=pen%
- 6130 RETURN
+ 6130 VDU 26:RETURN
  7000 REM ********** undo
  7010 IF cpt%>0 THEN cpt%=cpt%-1
  7011 IF cpt%=0 THEN GOSUB 2150:oldxc%=centx%:oldyc%=centy%
  7012 IF cpt%>0 THEN oldxc%=?(x+cpt%):oldyc%=?(y+cpt%)
  7020 GOSUB 7030:RETURN
  7030 REM ********** redraw image
- 7040 FOR i%=0 TO cpt%
+ 7040 VDU 24,minx%;maxy%;maxx%;miny%;
+ 7045 FOR i%=0 TO cpt%
  7050 IF ?(cmd+i%)=ASC("c") THEN GCOL 0,?(c+i%):PLOT 4,80,10:PLOT 101,239,129
  7060 IF ?(cmd+i%)=ASC("m") THEN GCOL 0,?(c+i%):PLOT 4,?(x+i%),?(y+i%)
  7070 IF ?(cmd+i%)=ASC("p") THEN GCOL 0,?(c+i%):PLOT 69,?(x+i%),?(y+i%)
@@ -172,7 +173,7 @@
  7086 IF ?(cmd+i%)=ASC("r") THEN GOSUB 7270
  7088 IF ?(cmd+i%)=ASC("d") THEN GOSUB 7300
  7090 IF ?(cmd+i%)=ASC("f") THEN GCOL 0,?(c+i%):PLOT 128,?(x+i%),?(y+i%)
- 7100 NEXT i%:GOSUB 2000
+ 7100 NEXT i%:GOSUB 2000:VDU 26
  7110 RETURN
  7120 REM ********** wait a short time
  7130 FOR t%=1 TO 1000:NEXT t%
@@ -183,19 +184,19 @@
  7180 REM ********** wait a long time showing pixel pen
  7190 FOR j%=1 TO 3:GOSUB 7150:NEXT j%
  7200 RETURN
- 7210 REM draw line
+ 7210 REM ********** draw a line
  7220 GCOL 0,?(c+i%):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 5,?(x+i%),?(y+i%)
  7230 RETURN
- 7240 REM draw triangle
+ 7240 REM ********** draw a triangle
  7250 GCOL 0,?(c+i%):PLOT 4,?(x+i%-2),?(y+i%-2):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 85,?(x+i%),?(y+i%)
  7260 RETURN
- 7270 REM draw rectangle
+ 7270 REM ********** draw a rectangle
  7280 GCOL 0,?(c+i%):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 101,?(x+i%),?(y+i%)
  7290 RETURN
- 7300 REM draw disc
+ 7300 REM ********** draw a disc
  7310 GCOL 0,?(c+i%):PLOT 4,?(x+i%-1),?(y+i%-1):PLOT 157,?(x+i%),?(y+i%)
  7320 RETURN
- 7330 REM show tool info
+ 7330 REM ********** show tool info
  7340 IF tool$="m" THEN PRINT TAB(0,17);"Move Tool"
  7350 IF tool$="p" THEN PRINT TAB(0,17);"Plot Tool"
  7360 IF tool$="l" THEN PRINT TAB(0,17);"Line Tool"
@@ -204,3 +205,13 @@
  7390 IF tool$="f" THEN PRINT TAB(0,17);"Fill Tool"
  7400 IF tool$="d" THEN PRINT TAB(0,17);"Disc Tool"
  7410 RETURN
+ 8000 REM ********** data's
+ 8010 DATA "RET","C11","[Arrows]","C14"," to position the cursor"
+ 8020 DATA "RET","C11","[m]","C14","ove ","C11","[p]","C14","lot ","C11","[l]","C14","ine"
+ 8030 DATA "RET","C11","[d]","C14","isc ","C11","[t]","C14","riangle ","C11","[r]","C14","ectangle"
+ 8040 DATA "RET","C11","[+/-]","C14"," to set pen ","C11","[Alt +/-]","C14"," to set paper"
+ 8050 DATA "RET","C11","[CTRL+S]","C14","ave image ","C11","[CTRL+L]","C14","oad an image "
+ 8060 DATA "RET","C11","[CTRL+E]","C14","xport ","C11","[u]","C14","ndo"
+ 8070 DATA "RET","C11","[CTRL +/-]","C14"," set cursor speed"
+ 8080 DATA "RET","C11","[DEL]","C14"," clear image","C11","[F12]","C14"," quit",
+ 8090 DATA "STP"
