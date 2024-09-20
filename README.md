@@ -6,7 +6,8 @@ You can even export a BASIC source code file with your graphics inside.
 Push 'h' key for Help.
 
 miniGraf is written in BBC BASIC and is under MIT licence.
-[![miniGraf](screenshot.jpg)](https://www.youtube.com/watch?v=9bjvjwZnP1s)
+[![miniGraf](screenshot1.jpg)]()
+[![miniGraf_demo](screenshot2.jpg)]()
 
 While in miniGraf, type h to view help.
-("Fill" function will be implemented in the futur)
+("Fill" function will be implemented in the futur, if possible)
