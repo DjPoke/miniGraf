@@ -105,7 +105,7 @@
  4020 IF f$="" THEN GOSUB 2120:RETURN
  4030 f$=f$+".mng"
  4040 file=OPENIN f$
- 4050 IF file=0 THEN PRINT "No data !": CLOSE#file:RETURN
+ 4050 IF file=0 THEN PRINT "File missing !": CLOSE#file:RETURN
  4060 INPUT#file,cpt%
  4070 FOR i%=0 TO cpt%
  4080 INPUT#file,?(cmd+i%),?(c+i%),?(x+i%),?(y+i%)
